@@ -13,7 +13,7 @@
     "preview": "$npm_node_execpath ./node_modules/vite/bin/vite.js preview",
     "parse:fit": "node ./scripts/parse-fit.mjs",
     "summarize:rounds": "node ./scripts/summarize-rounds.mjs",
-    "predeploy": "npm run build",
+    "predeploy": "tsc -b && $npm_node_execpath ./node_modules/vite/bin/vite.js build",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
