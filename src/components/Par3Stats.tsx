@@ -17,9 +17,13 @@ type Uploaded = UploadedFile;
 
 type AnyRecord = Record<string, unknown>;
 
-function isObject(v: unknown): v is AnyRecord {
-  return !!v && typeof v === "object" && !Array.isArray(v);
-}
+type Par3Row = {
+  club: string;
+  total: number;
+  gir: number;
+  pct: number;
+  model?: string;
+};
 
 function getNumber(o: AnyRecord, keys: string[]): number | undefined {
   for (const k of keys) {
@@ -34,13 +38,6 @@ function getNumber(o: AnyRecord, keys: string[]): number | undefined {
 export function Par3Stats(props: {
   uploaded: Uploaded[];
   shotsData?: ShotsData | null;
-  scorecardsData?: ScorecardsData | null;
-  clubsData?: ClubsData | null;
-  clubsData?: any;
-  clubsData?: any;
-  clubsData?: any;
-  clubsData?: any;
-  clubsData?: ClubsData | null;
   scorecardsData?: ScorecardsData | null;
   clubsData?: ClubsData | null;
   clubTypesData?: ClubTypesData | null;
@@ -131,7 +128,7 @@ export function Par3Stats(props: {
         if (!metaByKey.has(clubKey)) metaByKey.set(clubKey, { label, model });
       }
 
-      const table = Array.from(totalsByKey.entries())
+      const table: Par3Row[] = Array.from(totalsByKey.entries())
         .map(([clubKey, v]) => ({
           club: metaByKey.get(clubKey)?.label || clubKey,
           model: metaByKey.get(clubKey)?.model,
@@ -161,10 +158,10 @@ export function Par3Stats(props: {
       if (props.dateRange) {
         const sid = getScorecardIdFromFitPath(file.path);
         if (sid) {
-          const sc = (props.scorecardsData?.data || []).find(
+          const sc = ((props.scorecardsData?.data || []) as any[]).find(
             (r: any) => String(r?.id ?? r?.scorecardId ?? "") === String(sid)
           );
-          const ds = sc?.formattedStartTime || sc?.startTime;
+          const ds = (sc as any)?.formattedStartTime || (sc as any)?.startTime;
           const d = ds ? new Date(ds) : undefined;
           if (!d || d < props.dateRange.from || d > props.dateRange.to) {
             continue;
@@ -272,12 +269,13 @@ export function Par3Stats(props: {
       }
     }
 
-    const table = Array.from(totalsByClub.entries())
+    const table: Par3Row[] = Array.from(totalsByClub.entries())
       .map(([club, v]) => ({
         club,
         total: v.total,
         gir: v.gir,
         pct: v.total ? (v.gir / v.total) * 100 : 0,
+        model: undefined,
       }))
       .sort((a, b) => b.pct - a.pct || b.total - a.total);
     debug["fit.holes"] = fitHoles;

@@ -7,3 +7,7 @@ declare module "fit-file-parser" {
     ): void;
   }
 }
+declare module "@garmin/fitsdk" {
+  export const Decoder: any;
+  export const Stream: any;
+}

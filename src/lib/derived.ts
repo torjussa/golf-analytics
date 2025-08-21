@@ -1,10 +1,6 @@
-import roundsJson from "../../data/DI-GOLF/derived/rounds.json";
-import type { DerivedRoundsFile, DerivedRound } from "./types";
-
-export function loadDerivedRounds(): DerivedRound[] {
-  const file = roundsJson as unknown as DerivedRoundsFile;
-  return file.rounds ?? [];
-}
+// This module previously imported a generated JSON. To avoid build errors when the file
+// is missing locally, we expose helpers that work from passed-in data only.
+import type { DerivedRound } from "./types";
 
 export function computePuttSeries(rounds: DerivedRound[]) {
   return rounds
@@ -26,7 +22,7 @@ export function computeGirPuttSeries(rounds: DerivedRound[]) {
   return rounds
     .map((r) => {
       const girPutts = r.holes.reduce((sum, h) => {
-        return sum + (h.gir ? (h.putts ?? 0) : 0);
+        return sum + (h.gir ? h.putts ?? 0 : 0);
       }, 0);
       const date = r.formattedStartTime || r.startTime || String(r.id);
       return {
@@ -39,5 +35,3 @@ export function computeGirPuttSeries(rounds: DerivedRound[]) {
     })
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
-
-

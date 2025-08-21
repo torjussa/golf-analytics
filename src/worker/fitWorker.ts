@@ -34,7 +34,9 @@ type ScorecardSections = {
   stats?: unknown;
 };
 
-declare const self: DedicatedWorkerGlobalScope & { FITSdk?: any };
+// In TS DOM lib, DedicatedWorkerGlobalScope exists when 'WebWorker' lib is included.
+// Our tsconfig uses DOM libs; to keep types happy, declare a minimal shape here.
+declare const self: any;
 
 function parseWithFallback(buffer: ArrayBuffer): Promise<any> {
   const parser = new FitParser({
@@ -102,7 +104,6 @@ function tryGroupSections(obj: any): ScorecardSections | undefined {
     const hasPar = keys.some((k) => /(^|\s|_|-)par$/i.test(k));
     const hasScore = keys.some((k) => /(^|\s|_|-)score$/i.test(k));
     const hasPutts = keys.some((k) => /(^|\s|_|-)putts?$/i.test(k));
-    const hasShot = keys.some((k) => /(^|\s|_|-)shot$/i.test(k));
     if (hasHole && (hasPar || hasScore || hasPutts))
       rows.push(o as Record<string, unknown>);
     keys.forEach((k) => scan(o[k]));

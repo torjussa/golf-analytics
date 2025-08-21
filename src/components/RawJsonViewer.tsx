@@ -1,4 +1,4 @@
-import React from "react";
+// React import not required with automatic JSX runtime
 
 // Mapping for message 190 numeric field headers to human-readable labels (as provided)
 const FIELD_NAMES_190: Record<string, string> = {

@@ -8,10 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "parse:fit": "node ./scripts/parse-fit.mjs",
-    "summarize:rounds": "node ./scripts/summarize-rounds.mjs",
-    "inspect:fit": "node ./scripts/inspect-fit.mjs",
-    "extract:pars": "node ./scripts/extract-pars.mjs",
-    "extract:scorecard": "node ./scripts/extract-scorecard.mjs"
+    "summarize:rounds": "node ./scripts/summarize-rounds.mjs"
   },
   "dependencies": {
     "@garmin/fitsdk": "^21.178.0",
@@ -24,8 +21,6 @@
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
-    "easy-fit": "^0.0.8",
-    "fit-decoder": "^1.0.5",
     "typescript": "^5.4.5",
     "vite": "^5.2.10"
   }
