@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+/dist/
+
+# TypeScript
+*.tsbuildinfo
+/tsconfig.tsbuildinfo
+
+# Vite cache
+/.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editors/IDE
+/.vscode/
+/.idea/
+
+# OS
+.DS_Store
+
+# Coverage
+/coverage/
+
+# Caches
+/.cache/
+/.parcel-cache/
+/.turbo/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Local tools
+/tools/FitCSVTool.jar
+
+# Data artifacts (keep source JSONs, ignore generated + binaries)
+/data/DI-GOLF/fit-json/
+/data/DI-GOLF/fit-csv/
+/data/DI-GOLF/derived/
+/data/DI-GOLF/*.fit
