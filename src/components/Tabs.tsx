@@ -1,37 +1,32 @@
 // React import not required with automatic JSX runtime
 
-export type TabKey = "putting" | "clubs" | "par3";
+export type TabKey = "putting" | "clubs" | "par3" | "approach" | "gir";
 
 export function Tabs(props: { active: TabKey; onChange: (t: TabKey) => void }) {
   const tabs: Array<{ key: TabKey; label: string }> = [
+      { key: "clubs", label: "Club distances" },
     { key: "putting", label: "Putting" },
-    { key: "clubs", label: "Club distances" },
     { key: "par3", label: "Par 3s" },
+    { key: "approach", label: "Approach" },
+    { key: "gir", label: "GIR / round" },
   ];
   return (
     <div
-      style={{
-        display: "flex",
-        gap: 8,
-        borderBottom: "1px solid #eee",
-        margin: "8px 0 16px",
-      }}
+      className="mb-4 flex overflow-x-auto rounded-lg bg-gray-100 p-1"
+      role="tablist"
     >
       {tabs.map((t) => (
         <button
           key={t.key}
+          role="tab"
+          aria-selected={props.active === t.key}
+          className={
+            "whitespace-nowrap rounded-md px-3 py-1.5 text-sm md:text-base transition-colors duration-150 " +
+            (props.active === t.key
+              ? "bg-white text-gray-900 shadow"
+              : "text-gray-600 hover:bg-white/60")
+          }
           onClick={() => props.onChange(t.key)}
-          style={{
-            padding: "8px 12px",
-            border: "none",
-            borderBottom:
-              props.active === t.key
-                ? "2px solid #0088FE"
-                : "2px solid transparent",
-            background: "transparent",
-            color: props.active === t.key ? "#111" : "#666",
-            cursor: "pointer",
-          }}
         >
           {t.label}
         </button>

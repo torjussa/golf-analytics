@@ -1,0 +1,20 @@
+---
+description: How to work with styling components in the app
+globs:
+alwaysApply: false
+---
+
+    Tailwind CSS & daisyUI
+
+    - Use Tailwind CSS for styling components, following a utility-first approach.
+    - Leverage daisyUI's pre-built components for quick UI development.
+    - Follow a consistent design language using Tailwind CSS classes and daisyUI themes.
+    - Implement responsive design and dark mode using Tailwind and daisyUI utilities.
+    - Optimize for accessibility (e.g., aria-attributes) when using components.
+    - Reuse components when applicable
+    - Implement toasts to update the user of system status, when valuable.
+
+    Dependencies
+
+    - Tailwind CSS for utility-first styling
+    - daisyUI for pre-built UI components and themes

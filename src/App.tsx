@@ -9,8 +9,11 @@ import {
   type ClubTypesFile,
 } from "./components/ClubHeatmaps";
 import { Tabs, type TabKey } from "./components/Tabs";
+import { ApproachPlaceholder } from "./components/ApproachPlaceholder";
 import { PuttingChart } from "./components/PuttingChart";
 import { Par3Placeholder } from "./components/Par3Placeholder";
+import { GirPerRound } from "./components/GirPerRound";
+import { Info, Database } from "lucide-react";
 
 type ScorecardHole = {
   number: number;
@@ -90,7 +93,7 @@ export function App() {
     React.useState<ClubTypesFile | null>(null);
   const [uploadedScorecards, setUploadedScorecards] =
     React.useState<ScorecardJson | null>(null);
-  const [activeTab, setActiveTab] = React.useState<TabKey>("putting");
+  const [activeTab, setActiveTab] = React.useState<TabKey>("clubs");
 
   type Units = DistanceUnits;
   const detectDefaultUnits = React.useCallback((): Units => "meters", []);
@@ -185,181 +188,199 @@ export function App() {
     return buckets;
   }, [filteredRounds, uploadedScorecards]);
 
-  return (
-    <div
-      style={{
-        maxWidth: 1000,
-        margin: "0 auto",
-        padding: 24,
-        fontFamily:
-          "system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
-      }}
-    >
-      <h1 style={{ marginBottom: 8 }}>Golf Analytics</h1>
-      <p style={{ color: "#555", marginTop: 0 }}>Prototype analytics</p>
+  const handleLoaded = React.useCallback(
+    (files: Array<{ path: string; json: unknown }>) => {
+      setUploaded(files);
+      const clubs = files.find((f) => /Golf-CLUB\.json$/i.test(f.path))
+        ?.json as ClubsFile | undefined;
+      const shots = files.find((f) => /Golf-SHOT\.json$/i.test(f.path))
+        ?.json as ShotsFile | undefined;
+      const clubTypes = files.find((f) =>
+        /Golf-CLUB_TYPES\.json$/i.test(f.path)
+      )?.json as ClubTypesFile | undefined;
+      const scorecards = files.find((f) =>
+        /Golf-SCORECARD\.json$/i.test(f.path)
+      )?.json as ScorecardJson | undefined;
+      if (clubs) setUploadedClubs(clubs);
+      if (shots) setUploadedShots(shots);
+      if (clubTypes) setUploadedClubTypes(clubTypes);
+      if (scorecards) setUploadedScorecards(scorecards);
+    },
+    []
+  );
 
-      <div style={{ margin: "8px 0 16px" }}>
-        <FolderUpload
-          onLoaded={(files) => {
-            setUploaded(files);
-            const clubs = files.find((f) => /Golf-CLUB\.json$/i.test(f.path))
-              ?.json as ClubsFile | undefined;
-            const shots = files.find((f) => /Golf-SHOT\.json$/i.test(f.path))
-              ?.json as ShotsFile | undefined;
-            const clubTypes = files.find((f) =>
-              /Golf-CLUB_TYPES\.json$/i.test(f.path)
-            )?.json as ClubTypesFile | undefined;
-            const scorecards = files.find((f) =>
-              /Golf-SCORECARD\.json$/i.test(f.path)
-            )?.json as ScorecardJson | undefined;
-            if (clubs) setUploadedClubs(clubs);
-            if (shots) setUploadedShots(shots);
-            if (clubTypes) setUploadedClubTypes(clubTypes);
-            if (scorecards) setUploadedScorecards(scorecards);
-          }}
-        />
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <div
-          style={{
-            margin: "8px 0 12px",
-            padding: 12,
-            border: "1px solid #e5e7eb",
-            borderRadius: 8,
-            boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-          }}
-        >
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>Units</div>
-          <div
-            style={{
-              display: "inline-flex",
-              border: "1px solid #e5e7eb",
-              borderRadius: 9999,
-              overflow: "hidden",
-            }}
+  const loadSampleData = React.useCallback(async () => {
+    try {
+      const [clubs, shots, clubTypes, scorecards] = await Promise.all([
+        import("../data/DI-GOLF/Golf-CLUB.json"),
+        import("../data/DI-GOLF/Golf-SHOT.json"),
+        import("../data/DI-GOLF/Golf-CLUB_TYPES.json"),
+        import("../data/DI-GOLF/Golf-SCORECARD.json"),
+      ]);
+      const files = [
+        { path: "DI-GOLF/Golf-CLUB.json", json: (clubs as any).default },
+        { path: "DI-GOLF/Golf-SHOT.json", json: (shots as any).default },
+        {
+          path: "DI-GOLF/Golf-CLUB_TYPES.json",
+          json: (clubTypes as any).default,
+        },
+        {
+          path: "DI-GOLF/Golf-SCORECARD.json",
+          json: (scorecards as any).default,
+        },
+      ];
+      handleLoaded(files);
+    } catch (err) {
+      console.error("Failed to load sample data", err);
+    }
+  }, [handleLoaded]);
+
+  return (
+    <div className="mx-auto max-w-6xl p-6">
+      <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="mb-0 text-4xl font-black leading-tight">
+            Golf Analytics
+          </h1>
+          <p className="mt-1 text-gray-600">Prototype analytics</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <FolderUpload onLoaded={handleLoaded} />
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+            aria-label="How to get your own data"
+            title="Request data export at Garmin Connect, unzip the folder you receive on email, locate and upload the folder /DI-Connect/DI-Golf"
           >
-            <button
-              onClick={() => setUnits("meters")}
-              style={{
-                padding: "6px 12px",
-                border: "none",
-                background: units === "meters" ? "#233faa" : "#fff",
-                color: units === "meters" ? "#fff" : "#333",
-                cursor: "pointer",
-              }}
-            >
-              Meters
-            </button>
-            <button
-              onClick={() => setUnits("yards")}
-              style={{
-                padding: "6px 12px",
-                border: "none",
-                background: units === "yards" ? "#233faa" : "#fff",
-                color: units === "yards" ? "#fff" : "#333",
-                cursor: "pointer",
-                borderLeft: "1px solid #e5e7eb",
-              }}
-            >
-              Yards
-            </button>
+            <Info className="h-4 w-4" />
+            How it works
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 shadow-sm hover:bg-gray-50"
+            onClick={loadSampleData}
+          >
+            <Database className="h-4 w-4" />
+            Load sample data
+          </button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="p-3">
+            <div className="mb-2 font-semibold">Units</div>
+            <div className="inline-flex overflow-hidden rounded-full border border-gray-200">
+              <button
+                type="button"
+                className={
+                  "px-3 py-1.5 text-sm transition-colors " +
+                  (units === "meters"
+                    ? "bg-blue-600 text-white"
+                    : "bg-transparent text-gray-700 hover:bg-gray-100")
+                }
+                aria-pressed={units === "meters"}
+                onClick={() => setUnits("meters")}
+              >
+                Meters
+              </button>
+              <button
+                type="button"
+                className={
+                  "px-3 py-1.5 text-sm transition-colors " +
+                  (units === "yards"
+                    ? "bg-blue-600 text-white"
+                    : "bg-transparent text-gray-700 hover:bg-gray-100")
+                }
+                aria-pressed={units === "yards"}
+                onClick={() => setUnits("yards")}
+              >
+                Yards
+              </button>
+            </div>
           </div>
         </div>
 
         {allDates.length > 0 && (
-          <div
-            style={{
-              margin: "8px 0 12px",
-              padding: 12,
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-            }}
-          >
-            {/* Slider styles scoped to this block */}
-            <style
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{
-                __html: `
+          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="p-3">
+              {/* Slider styles scoped to this block */}
+              <style
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{
+                  __html: `
               .dual-range{position:relative;height:36px}
               .dual-range input[type=range]{-webkit-appearance:none;appearance:none;position:absolute;left:0;top:0;width:100%;height:36px;background:transparent;margin:0;pointer-events:none}
-              .dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #233faa;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:auto}
-              .dual-range input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #233faa;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:auto}
+              .dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #2563eb;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:auto}
+              .dual-range input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #2563eb;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:auto}
               .dual-range .track{position:absolute;top:50%;left:0;right:0;height:4px;background:#e5e7eb;border-radius:2px;transform:translateY(-50%)}
-              .dual-range .fill{position:absolute;top:50%;height:4px;background:#233faa;border-radius:2px;transform:translateY(-50%)}
+              .dual-range .fill{position:absolute;top:50%;height:4px;background:#2563eb;border-radius:2px;transform:translateY(-50%)}
             `,
-              }}
-            />
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Date Range</div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 8,
-                color: "#111",
-                fontSize: 18,
-              }}
-            >
-              <div>
-                {dateRange
-                  ? dateRange.from.toLocaleString(undefined, {
-                      month: "short",
-                      year: "numeric",
-                    })
-                  : ""}
-              </div>
-              <div>
-                {dateRange
-                  ? dateRange.to.toLocaleString(undefined, {
-                      month: "short",
-                      year: "numeric",
-                    })
-                  : ""}
-              </div>
-            </div>
-            <div className="dual-range">
-              <div className="track" />
-              <div
-                className="fill"
-                style={{
-                  left:
-                    allDates.length > 1
-                      ? `${(dateIdxRange[0] / (allDates.length - 1)) * 100}%`
-                      : "0%",
-                  right:
-                    allDates.length > 1
-                      ? `${
-                          100 - (dateIdxRange[1] / (allDates.length - 1)) * 100
-                        }%`
-                      : "0%",
                 }}
               />
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, allDates.length - 1)}
-                step={1}
-                value={dateIdxRange[0]}
-                onChange={(e) =>
-                  setDateIdxRange([
-                    Math.min(Number(e.target.value), dateIdxRange[1]),
-                    dateIdxRange[1],
-                  ])
-                }
-              />
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, allDates.length - 1)}
-                step={1}
-                value={dateIdxRange[1]}
-                onChange={(e) =>
-                  setDateIdxRange([
-                    dateIdxRange[0],
-                    Math.max(Number(e.target.value), dateIdxRange[0]),
-                  ])
-                }
-              />
+              <div className="mb-2 font-semibold">Date Range</div>
+              <div className="mb-2 flex justify-between text-lg text-gray-800">
+                <div>
+                  {dateRange
+                    ? dateRange.from.toLocaleString(undefined, {
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : ""}
+                </div>
+                <div>
+                  {dateRange
+                    ? dateRange.to.toLocaleString(undefined, {
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : ""}
+                </div>
+              </div>
+              <div className="dual-range">
+                <div className="track" />
+                <div
+                  className="fill"
+                  style={{
+                    left:
+                      allDates.length > 1
+                        ? `${(dateIdxRange[0] / (allDates.length - 1)) * 100}%`
+                        : "0%",
+                    right:
+                      allDates.length > 1
+                        ? `${
+                            100 -
+                            (dateIdxRange[1] / (allDates.length - 1)) * 100
+                          }%`
+                        : "0%",
+                  }}
+                />
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, allDates.length - 1)}
+                  step={1}
+                  value={dateIdxRange[0]}
+                  onChange={(e) =>
+                    setDateIdxRange([
+                      Math.min(Number(e.target.value), dateIdxRange[1]),
+                      dateIdxRange[1],
+                    ])
+                  }
+                />
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, allDates.length - 1)}
+                  step={1}
+                  value={dateIdxRange[1]}
+                  onChange={(e) =>
+                    setDateIdxRange([
+                      dateIdxRange[0],
+                      Math.max(Number(e.target.value), dateIdxRange[0]),
+                    ])
+                  }
+                />
+              </div>
             </div>
           </div>
         )}
@@ -370,30 +391,23 @@ export function App() {
       {activeTab === "putting" &&
         (uploadedScorecards && filteredRounds.length > 0 ? (
           <>
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                alignItems: "center",
-                margin: "12px 0 16px",
-              }}
-            >
-              <label htmlFor="round-length" style={{ color: "#333" }}>
+            <div className="mb-4 mt-3 flex items-center gap-3">
+              <label htmlFor="round-length" className="text-gray-800">
                 Round length:
               </label>
               <select
                 id="round-length"
+                className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
                 value={roundLength}
                 onChange={(e) =>
                   setRoundLength(e.target.value as "all" | "9" | "18")
                 }
-                style={{ padding: "6px 8px" }}
               >
                 <option value="all">All</option>
                 <option value="9">9 holes</option>
                 <option value="18">18 holes</option>
               </select>
-              <span style={{ color: "#777", fontSize: 12 }}>
+              <span className="text-xs text-gray-600">
                 Implausible rounds are hidden (&lt; 0.8 putts per hole)
               </span>
             </div>
@@ -404,16 +418,16 @@ export function App() {
             />
           </>
         ) : (
-          <div style={{ color: "#666" }}>
+          <div className="text-base-content/60">
             Upload your DI-GOLF folder (scorecards) to view putting chart.
           </div>
         ))}
 
       {activeTab === "clubs" && (
-        <div style={{ marginTop: 24 }}>
-          <h2 style={{ margin: "8px 0 12px", fontSize: 18 }}>Uploaded data</h2>
+        <div className="mt-6">
+          <h2 className="mb-3 mt-2 text-lg font-semibold">Uploaded data</h2>
           {!uploadedClubs || !uploadedShots || !uploadedClubTypes ? (
-            <div style={{ color: "#666" }}>
+            <div className="text-gray-600">
               Upload your DI-GOLF folder to view club distances.
             </div>
           ) : (
@@ -440,7 +454,30 @@ export function App() {
         />
       )}
 
-      <div style={{ marginTop: 24, color: "#666" }}>
+      {activeTab === "approach" && (
+        <ApproachPlaceholder
+          uploaded={uploaded}
+          shotsData={uploadedShots}
+          scorecardsData={uploadedScorecards}
+          clubsData={uploadedClubs}
+          clubTypesData={uploadedClubTypes}
+          dateRange={dateRange as any}
+        />
+      )}
+
+      {activeTab === "gir" && (
+        <GirPerRound
+          uploaded={uploaded as any}
+          scorecardsData={
+            uploadedScorecards
+              ? ({ data: uploadedScorecards.data } as any)
+              : undefined
+          }
+          dateRange={dateRange as any}
+        />
+      )}
+
+      <div className="mt-6 text-gray-600">
         <small>Upload your DI-GOLF folder above to populate charts.</small>
       </div>
       <RawJsonViewer files={uploaded} />

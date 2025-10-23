@@ -1,4 +1,5 @@
 import React from "react";
+import { FolderUp } from "lucide-react";
 // Worker-based decoding to allow future WASM decoder
 const fitWorker = new Worker(
   new URL("../worker/fitWorker.ts", import.meta.url),
@@ -77,17 +78,23 @@ export function FolderUpload(props: {
   };
 
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+    <div className="flex items-center gap-2">
       <input
         ref={inputRef}
         type="file"
-        style={{ display: "none" }}
+        className="hidden"
         // @ts-expect-error: Non-standard attribute supported by Chromium-based browsers and Safari
         webkitdirectory="true"
         directory="true"
         onChange={handleChange}
       />
-      <button onClick={handlePick} style={{ padding: "8px 12px" }}>
+      <button
+        type="button"
+        className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 shadow-sm hover:bg-gray-50"
+        onClick={handlePick}
+        aria-label="Upload DI-GOLF folder"
+      >
+        <FolderUp className="h-4 w-4" />
         Upload DI-GOLF folder
       </button>
     </div>

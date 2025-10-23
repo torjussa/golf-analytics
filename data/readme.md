@@ -1,0 +1,1 @@
+The DI-GOLF folder is an example of how the uploaded data might look like. The data in the folder should only be used for inspiration, not actually presented on the site.
