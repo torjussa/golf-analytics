@@ -14,7 +14,7 @@
     "parse:fit": "node ./scripts/parse-fit.mjs",
     "summarize:rounds": "node ./scripts/summarize-rounds.mjs",
     "predeploy": "tsc -b && $npm_node_execpath ./node_modules/vite/bin/vite.js build",
-    "deploy": "gh-pages -d dist -c garmindata.com"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@garmin/fitsdk": "^21.178.0",
