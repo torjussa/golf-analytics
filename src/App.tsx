@@ -246,7 +246,6 @@ export function App() {
           <h1 className="mb-0 text-4xl font-black leading-tight">
             Golf Analytics
           </h1>
-          <p className="mt-1 text-gray-600">Prototype analytics</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <FolderUpload onLoaded={handleLoaded} />
