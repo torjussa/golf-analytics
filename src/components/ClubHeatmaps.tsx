@@ -340,6 +340,7 @@ export function ClubHeatmaps(props: {
         Club shot distances (p{Math.round(lowP * 100)}–p
         {Math.round(highP * 100)})
       </h3>
+      {/* slider styles removed per request */}
       <div
         style={{
           display: "flex",

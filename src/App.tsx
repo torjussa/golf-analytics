@@ -15,6 +15,9 @@ import { Par3Placeholder } from "./components/Par3Placeholder";
 import { GirPerRound } from "./components/GirPerRound";
 import { Info, Database } from "lucide-react";
 
+const HOW_IT_WORKS_TEXT =
+  "Request data export at Garmin Connect, unzip the folder you receive on email, locate and upload the folder /DI-Connect/DI-Golf. No data is stored, all processing is done in your browser.";
+
 type ScorecardHole = {
   number: number;
   strokes?: number;
@@ -94,6 +97,7 @@ export function App() {
   const [uploadedScorecards, setUploadedScorecards] =
     React.useState<ScorecardJson | null>(null);
   const [activeTab, setActiveTab] = React.useState<TabKey>("clubs");
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = React.useState(false);
 
   type Units = DistanceUnits;
   const detectDefaultUnits = React.useCallback((): Units => "meters", []);
@@ -248,35 +252,36 @@ export function App() {
           <FolderUpload onLoaded={handleLoaded} />
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
-            aria-label="How to get your own data"
-            title="Request data export at Garmin Connect, unzip the folder you receive on email, locate and upload the folder /DI-Connect/DI-Golf"
-          >
-            <Info className="h-4 w-4" />
-            How it works
-          </button>
-          <button
-            type="button"
             className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 shadow-sm hover:bg-gray-50"
             onClick={loadSampleData}
           >
             <Database className="h-4 w-4" />
             Load sample data
           </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100"
+            aria-label="How to get your own data"
+            title={HOW_IT_WORKS_TEXT}
+            onClick={() => setIsHowItWorksOpen(true)}
+          >
+            <Info className="h-4 w-4" />
+            How it works
+          </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-          <div className="p-3">
-            <div className="mb-2 font-semibold">Units</div>
-            <div className="inline-flex overflow-hidden rounded-full border border-gray-200">
+      <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="rounded-md border border-gray-200 bg-white">
+          <div className="p-2">
+            <div className="mb-3 text-base font-semibold">Units</div>
+            <div className="inline-flex overflow-hidden rounded-full border border-gray-300 bg-gray-50">
               <button
                 type="button"
                 className={
-                  "px-3 py-1.5 text-sm transition-colors " +
+                  "px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 " +
                   (units === "meters"
                     ? "bg-blue-600 text-white"
-                    : "bg-transparent text-gray-700 hover:bg-gray-100")
+                    : "bg-transparent text-gray-700 hover:bg-white/60")
                 }
                 aria-pressed={units === "meters"}
                 onClick={() => setUnits("meters")}
@@ -286,10 +291,10 @@ export function App() {
               <button
                 type="button"
                 className={
-                  "px-3 py-1.5 text-sm transition-colors " +
+                  "px-3 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 " +
                   (units === "yards"
                     ? "bg-blue-600 text-white"
-                    : "bg-transparent text-gray-700 hover:bg-gray-100")
+                    : "bg-transparent text-gray-700 hover:bg-white/60")
                 }
                 aria-pressed={units === "yards"}
                 onClick={() => setUnits("yards")}
@@ -301,24 +306,24 @@ export function App() {
         </div>
 
         {allDates.length > 0 && (
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="p-3">
+          <div className="rounded-md border border-gray-200 bg-white">
+            <div className="p-2">
               {/* Slider styles scoped to this block */}
               <style
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{
                   __html: `
-              .dual-range{position:relative;height:36px}
-              .dual-range input[type=range]{-webkit-appearance:none;appearance:none;position:absolute;left:0;top:0;width:100%;height:36px;background:transparent;margin:0;pointer-events:none}
-              .dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #2563eb;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:auto}
-              .dual-range input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid #2563eb;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:auto}
-              .dual-range .track{position:absolute;top:50%;left:0;right:0;height:4px;background:#e5e7eb;border-radius:2px;transform:translateY(-50%)}
-              .dual-range .fill{position:absolute;top:50%;height:4px;background:#2563eb;border-radius:2px;transform:translateY(-50%)}
+              .dual-range{position:relative;height:32px}
+              .dual-range input[type=range]{-webkit-appearance:none;appearance:none;position:absolute;left:0;top:0;width:100%;height:32px;background:transparent;margin:0;pointer-events:none}
+              .dual-range input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #2563eb;box-shadow:0 1px 3px rgba(0,0,0,.2);pointer-events:auto}
+              .dual-range input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #2563eb;box-shadow:0 1px 3px rgba(0,0,0,.2);pointer-events:auto}
+              .dual-range .track{position:absolute;top:50%;left:0;right:0;height:4px;background:#e5e7eb;border-radius:9999px;transform:translateY(-50%)}
+              .dual-range .fill{position:absolute;top:50%;height:4px;background:#2563eb;border-radius:9999px;transform:translateY(-50%)}
             `,
                 }}
               />
-              <div className="mb-2 font-semibold">Date Range</div>
-              <div className="mb-2 flex justify-between text-lg text-gray-800">
+              <div className="mb-1 text-base font-semibold">Date Range</div>
+              <div className="mb-1 flex justify-between text-sm text-gray-800 md:text-base">
                 <div>
                   {dateRange
                     ? dateRange.from.toLocaleString(undefined, {
@@ -360,6 +365,7 @@ export function App() {
                   max={Math.max(0, allDates.length - 1)}
                   step={1}
                   value={dateIdxRange[0]}
+                  aria-label="From date index"
                   onChange={(e) =>
                     setDateIdxRange([
                       Math.min(Number(e.target.value), dateIdxRange[1]),
@@ -373,6 +379,7 @@ export function App() {
                   max={Math.max(0, allDates.length - 1)}
                   step={1}
                   value={dateIdxRange[1]}
+                  aria-label="To date index"
                   onChange={(e) =>
                     setDateIdxRange([
                       dateIdxRange[0],
@@ -385,6 +392,47 @@ export function App() {
           </div>
         )}
       </div>
+
+      {isHowItWorksOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setIsHowItWorksOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="how-it-works-title"
+            className="relative z-10 w-[min(90vw,28rem)] rounded-lg bg-white p-4 shadow-lg"
+          >
+            <div className="mb-2 flex items-center justify-between">
+              <h2 id="how-it-works-title" className="text-lg font-semibold">
+                How it works
+              </h2>
+              <button
+                type="button"
+                className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Close dialog"
+                onClick={() => setIsHowItWorksOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <p className="text-sm text-gray-700 whitespace-pre-line">
+              {HOW_IT_WORKS_TEXT}
+            </p>
+            <div className="mt-4 text-right">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-800 shadow-sm hover:bg-gray-50"
+                onClick={() => setIsHowItWorksOpen(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Tabs active={activeTab} onChange={setActiveTab} />
 

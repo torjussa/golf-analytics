@@ -80,28 +80,8 @@ export function GirPerRound(props: GirPerRoundProps) {
     return map;
   }, [props.scorecardsData, courseNameByScorecardId]);
 
-  // Collect courses present in scorecards
-  const allCourses = React.useMemo(() => {
-    const set = new Set<number>();
-    for (const sc of props.scorecardsData?.data || []) {
-      const cg = (sc as any).courseGlobalId as number | undefined;
-      if (typeof cg === "number") set.add(cg);
-    }
-    return Array.from(set.values()).sort((a, b) => a - b);
-  }, [props.scorecardsData]);
-
   // Track ignored courses (default: include all => none ignored)
-  const [ignoredCourses, setIgnoredCourses] = React.useState<Set<number>>(
-    new Set()
-  );
-  const toggleIgnored = (courseId: number) => {
-    setIgnoredCourses((prev) => {
-      const next = new Set(prev);
-      if (next.has(courseId)) next.delete(courseId);
-      else next.add(courseId);
-      return next;
-    });
-  };
+  const [ignoredCourses] = React.useState<Set<number>>(new Set());
 
   const rows: GirRoundRow[] = React.useMemo(() => {
     const out: GirRoundRow[] = [];
@@ -141,7 +121,7 @@ export function GirPerRound(props: GirPerRoundProps) {
         const approachStrokes = strokes - putts;
         if (approachStrokes <= par - 2) girHoles += 1;
       }
-      if (holesConsidered > 0) {
+      if (holesConsidered >= 9) {
         out.push({
           scorecardId: Number(sid),
           courseGlobalId,
@@ -151,7 +131,7 @@ export function GirPerRound(props: GirPerRoundProps) {
         });
       }
     }
-    out.sort((a, b) => a.scorecardId - b.scorecardId);
+    out.sort((a, b) => b.scorecardId - a.scorecardId);
     return out;
   }, [
     props.scorecardsData,
@@ -161,17 +141,45 @@ export function GirPerRound(props: GirPerRoundProps) {
     ignoredCourses,
   ]);
 
-  // Aggregate course counts for mini legend
-  const perCourseCounts = React.useMemo(() => {
-    const map = new Map<number, number>();
-    for (const r of rows) {
-      if (typeof r.courseGlobalId !== "number") continue;
-      map.set(r.courseGlobalId, (map.get(r.courseGlobalId) || 0) + 1);
-    }
-    return map;
-  }, [rows]);
-
   const hasParData = parByRoundHole.size > 0;
+
+  const girStats = React.useMemo(() => {
+    const totals = rows.reduce(
+      (acc, r) => {
+        acc.totalHoles += r.holesConsidered;
+        acc.totalGirs += r.girHoles;
+        if (r.holesConsidered === 18) {
+          acc.count18 += 1;
+          acc.sumGir18 += r.girHoles;
+        } else if (r.holesConsidered === 9) {
+          acc.count9 += 1;
+          acc.sumGir9 += r.girHoles;
+        }
+        return acc;
+      },
+      {
+        totalHoles: 0,
+        totalGirs: 0,
+        sumGir18: 0,
+        sumGir9: 0,
+        count18: 0,
+        count9: 0,
+      }
+    );
+    const pct =
+      totals.totalHoles > 0 ? (totals.totalGirs / totals.totalHoles) * 100 : 0;
+    const avg18 = totals.count18 > 0 ? totals.sumGir18 / totals.count18 : 0;
+    const avg9 = totals.count9 > 0 ? totals.sumGir9 / totals.count9 : 0;
+    return {
+      totalHoles: totals.totalHoles,
+      totalGirs: totals.totalGirs,
+      pct,
+      avg18,
+      avg9,
+      count18: totals.count18,
+      count9: totals.count9,
+    };
+  }, [rows]);
 
   return (
     <div className="mt-6">
@@ -182,38 +190,50 @@ export function GirPerRound(props: GirPerRoundProps) {
         </div>
       ) : null}
 
-      {/* Ignore course controls */}
-      {allCourses.length > 0 ? (
+      {rows.length > 0 ? (
         <div className="mb-4 rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-          <div className="mb-2 font-semibold">Ignored courses</div>
-          <div className="flex flex-wrap gap-3">
-            {allCourses.map((cid) => {
-              const checked = ignoredCourses.has(cid);
-              return (
-                <label
-                  key={cid}
-                  className="inline-flex items-center gap-2 text-sm text-gray-800"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    checked={checked}
-                    onChange={() => toggleIgnored(cid)}
-                  />
-                  <span>
-                    {courseNameByGlobalId.get(cid) || `Course ${cid}`} ({cid})
-                    {perCourseCounts.has(cid) ? (
-                      <span className="ml-1 text-gray-500">
-                        ({perCourseCounts.get(cid)} rounds)
-                      </span>
-                    ) : null}
-                  </span>
-                </label>
-              );
-            })}
+          <div className="mb-2 font-semibold">
+            Averages
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div className="rounded-md border border-gray-100 bg-gray-50 p-3">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Total GIR
+              </div>
+              <div className="mt-1 text-2xl font-semibold text-gray-900">
+                {girStats.pct.toFixed(0)}%
+              </div>
+              <div className="text-xs text-gray-600">
+                {girStats.totalGirs} / {girStats.totalHoles} holes
+              </div>
+            </div>
+            <div className="rounded-md border border-gray-100 bg-gray-50 p-3">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                GIR per 18-hole round
+              </div>
+              <div className="mt-1 text-2xl font-semibold text-gray-900">
+                {girStats.avg18.toFixed(1)}
+              </div>
+              <div className="text-xs text-gray-600">
+                {girStats.count18} rounds
+              </div>
+            </div>
+            <div className="rounded-md border border-gray-100 bg-gray-50 p-3">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                GIR per 9-hole round
+              </div>
+              <div className="mt-1 text-2xl font-semibold text-gray-900">
+                {girStats.avg9.toFixed(1)}
+              </div>
+              <div className="text-xs text-gray-600">
+                {girStats.count9} rounds
+              </div>
+            </div>
           </div>
         </div>
       ) : null}
+
+      {/* Ignored courses multiselect removed */}
 
       {/* Data table */}
       {rows.length > 0 ? (
